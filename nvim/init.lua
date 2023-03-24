@@ -54,51 +54,14 @@ require('packer').startup(function(use)
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
 
+  use 'ggandor/lightspeed.nvim' --movement
+  
   -- Fuzzy Finder (files, lsp, etc)
   use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
 
   -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
   use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1 }
   
-  use {
-      'nvim-tree/nvim-tree.lua',
-      requires = {
-      'nvim-tree/nvim-web-devicons', -- optional, for file icons
-    },
-      ag = 'nightly' -- optional, updated every week. (see issue #1193)
-  }
-  
-  -- examples for your init.lua
-
--- disable netrw at the very start of your init.lua (strongly advised)
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-
--- set termguicolors to enable highlight groups
-vim.opt.termguicolors = true
-
--- empty setup using defaults
-require("nvim-tree").setup()
-
--- OR setup with some options
-require("nvim-tree").setup({
-  sort_by = "case_sensitive",
-  view = {
-    width = 30,
-    mappings = {
-      list = {
-        { key = "u", action = "dir_up" },
-      },
-    },
-  },
-  renderer = {
-    group_empty = true,
-  },
-  filters = {
-    dotfiles = true,
-  },
-})
-
 
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
@@ -126,11 +89,13 @@ end
 
 -- Automatically source and re-compile packer whenever you save this init.lua
 local packer_group = vim.api.nvim_create_augroup('Packer', { clear = true })
-vim.api.nvim_create_autocmd('BufWritePost', {
- command = 'source <afile> | silent! LspStop | silent! LspStart | PackerCompile',
-  group = packer_group,
-  pattern = vim.fn.expand '$MYVIMRC',
-})
+
+--vim.api.nvim_create_autocmd('BufWritePost', {
+--  command = 'source <afile> | silent! LspStop | silent! LspStart | PackerCompile',
+--  group = packer_group,
+--  pattern = vim.fn.expand '$MYVIMRC',
+--})
+
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -223,6 +188,37 @@ require('gitsigns').setup {
     changedelete = { text = '~' },
   },
 }
+
+-- NOTE: This is just illustration - there is no need to copy/paste the
+-- defaults, or call `setup` at all, if you do not want to change anything.
+
+require'lightspeed'.setup {
+  ignore_case = false,
+  exit_after_idle_msecs = { unlabeled = nil, labeled = nil },
+  --- s/x ---
+  jump_to_unique_chars = { safety_timeout = 400 },
+  match_only_the_start_of_same_char_seqs = true,
+  force_beacons_into_match_width = false,
+  -- Display characters in a custom way in the highlighted matches.
+  substitute_chars = { ['\r'] = '¬', },
+  -- Leaving the appropriate list empty effectively disables "smart" mode,
+  -- and forces auto-jump to be on or off.
+--  safe_labels = { . . . },
+--  labels = { . . . },
+  -- These keys are captured directly by the plugin at runtime.
+  special_keys = {
+    next_match_group = '<space>',
+    prev_match_group = '<tab>',
+  },
+  --- f/t ---
+  limit_ft_matches = 4,
+  repeat_ft_with_target_char = false,
+}
+
+
+
+-- NOTE: This is just illustration - there is no need to copy/paste the
+-- defaults, or call `setup` at all, if you do not want to change anything.
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -383,12 +379,12 @@ local servers = {
   -- rust_analyzer = {},
   -- tsserver = {},
 
-  sumneko_lua = {
-    Lua = {
-      workspace = { checkThirdParty = false },
-      telemetry = { enable = false },
-    },
-  },
+--  sumneko_lua = {
+--    Lua = {
+--      workspace = { checkThirdParty = false },
+--      telemetry = { enable = false },
+--    },
+--  },
 }
 
 -- Setup neovim lua configuration
