@@ -1,4 +1,12 @@
--- Install packer
+
+-- [[ Basic Keymaps ]]
+-- Set <space> as the leader key
+-- See `:help mapleader`
+--  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
+--install packer
 local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 local is_bootstrap = false
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
@@ -53,16 +61,54 @@ require('packer').startup(function(use)
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
+  use 'mfussenegger/nvim-dap' --debug adapter protocol
+  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } } --dap ui
+  use "folke/neodev.nvim" ----neodev
 
-  use 'ggandor/lightspeed.nvim' --movement
-  
+
   -- Fuzzy Finder (files, lsp, etc)
   use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
 
   -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
   use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1 }
-  
 
+  use {
+    'nvim-tree/nvim-tree.lua',
+    requires = {
+      'nvim-tree/nvim-web-devicons', -- optional, for file icons
+    },
+    tag = 'nightly' -- optional, updated every week. (see issue #1193)
+  }
+  -- examples for your init.lua
+
+  -- disable netrw at the very start of your init.lua (strongly advised)
+  vim.g.loaded_netrw = 1
+  vim.g.loaded_netrwPlugin = 1
+
+  -- set termguicolors to enable highlight groups
+  vim.opt.termguicolors = true
+
+  -- empty setup using defaults
+  require("nvim-tree").setup()
+
+  -- OR setup with some options
+  require("nvim-tree").setup({
+    sort_by = "case_sensitive",
+    view = {
+      width = 30,
+      mappings = {
+        list = {
+          { key = "u", action = "dir_up" },
+        },
+      },
+    },
+    renderer = {
+      group_empty = true,
+    },
+    filters = {
+      dotfiles = true,
+    },
+  })
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
   if has_plugins then
@@ -73,6 +119,122 @@ require('packer').startup(function(use)
     require('packer').sync()
   end
 end)
+-----debug c++ ----
+
+--adapter
+
+local dap_ok, dap = pcall(require, "dap")
+dap.adapters.lldb = {
+  type = 'executable',
+  command = '/usr/local/opt/llvm/bin/lldb-vscode', -- adjust as needed, must be absolute path
+  name = 'lldb'
+}
+
+--config
+dap.configurations.cpp = {
+  {
+    name = 'Launch',
+    type = 'lldb',
+    request = 'launch',
+    program = function()
+      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+    end,
+    cwd = '${workspaceFolder}',
+    stopOnEntry = false,
+    args = {},
+
+    -- 💀
+    -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
+    --
+    --    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    --
+    -- Otherwise you might get the following error:
+    --
+    --    Error on launch: Failed to attach to the target process
+    --
+    -- But you should be aware of the implications:
+    -- https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html
+    -- runInTerminal = false,
+  },
+}
+
+-- If you want to use this for Rust and C, add something like this:
+
+-- dap.configurations.c = dap.configurations.cpp
+-- dap.configurations.rust = dap.configurations.cpp
+
+require("neodev").setup({
+  library = { plugins = { "nvim-dap-ui" }, types = true },
+  ...
+})
+--dap ui--------------------
+
+local dap_ui_ok, ui = pcall(require, "dapui")
+
+if not (dap_ok and dap_ui_ok) then
+  require("notify")("dap-ui not installed!", "warning")
+  return
+end
+--using default setting
+ui.setup({})
+-------dapui keymapping
+  
+vim.fn.sign_define('DapBreakpoint', { text = '🐞' })
+
+----- debug mappings-----
+vim.keymap.set('n', '<F5>', function() require('dap').continue() end)
+vim.keymap.set('n', '<F10>', function() require('dap').step_over() end)
+vim.keymap.set('n', '<F11>', function() require('dap').step_into() end)
+vim.keymap.set('n', '<F12>', function() require('dap').step_out() end)
+
+-- Set breakpoints, get variable values, step into/out of functions, etc.
+vim.keymap.set('n', '<localleader>db', function() require('dap').toggle_breakpoint() end)
+vim.keymap.set('n', '<localleader>dB', function() require('dap').set_breakpoint() end)
+vim.keymap.set('n', '<localleader>lp',
+  function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
+vim.keymap.set('n', '<localleader>dr', function() require('dap').repl.open() end)
+vim.keymap.set('n', '<localleader>dl', function() require('dap').run_last() end)
+vim.keymap.set({ 'n', 'v' }, '<localleader>dh', function()
+  require('dap.ui.widgets').hover()
+end)
+vim.keymap.set({ 'n', 'v' }, '<localleader>dp', function()
+  require('dap.ui.widgets').preview()
+end)
+vim.keymap.set('n', '<localleader>df', function()
+  local widgets = require('dap.ui.widgets')
+  widgets.centered_float(widgets.frames)
+end)
+vim.keymap.set('n', '<localleader>ds', function()
+  local widgets = require('dap.ui.widgets')
+  widgets.centered_float(widgets.scopes)
+end)
+
+-- Close debugger and clear breakpoints
+vim.keymap.set("n", "<localleader>de", function()
+  dap.clear_breakpoints()
+  ui.toggle({})
+  dap.terminate()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-w>=", false, true, true), "n", false)
+  require("notify")("Debugger session ended", "warn")
+end)
+
+
+dap.listeners.after.event_initialized["dapui_config"] = function()
+    ui.open({})
+end
+
+dap.listeners.before.event_terminated["dapui_config"] = function()
+    ui.close({})
+end
+
+
+dap.listeners.before.event_exited["dapui_config"] = function()
+    ui.close({})
+end
+
+
+
+
 
 -- When we are bootstrapping a configuration, it doesn't
 -- make sense to execute the rest of the init.lua.
@@ -89,13 +251,11 @@ end
 
 -- Automatically source and re-compile packer whenever you save this init.lua
 local packer_group = vim.api.nvim_create_augroup('Packer', { clear = true })
-
 --vim.api.nvim_create_autocmd('BufWritePost', {
---  command = 'source <afile> | silent! LspStop | silent! LspStart | PackerCompile',
---  group = packer_group,
---  pattern = vim.fn.expand '$MYVIMRC',
---})
-
+-- command = 'source <afile> | silent! LspStop | silent! LspStart | PackerCompile',
+-- group = packer_group,
+-- pattern = vim.fn.expand '$MYVIMRC',
+-- })
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -129,13 +289,6 @@ vim.cmd [[colorscheme onedark]]
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
-
--- [[ Basic Keymaps ]]
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
 
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
@@ -188,37 +341,6 @@ require('gitsigns').setup {
     changedelete = { text = '~' },
   },
 }
-
--- NOTE: This is just illustration - there is no need to copy/paste the
--- defaults, or call `setup` at all, if you do not want to change anything.
-
-require'lightspeed'.setup {
-  ignore_case = false,
-  exit_after_idle_msecs = { unlabeled = nil, labeled = nil },
-  --- s/x ---
-  jump_to_unique_chars = { safety_timeout = 400 },
-  match_only_the_start_of_same_char_seqs = true,
-  force_beacons_into_match_width = false,
-  -- Display characters in a custom way in the highlighted matches.
-  substitute_chars = { ['\r'] = '¬', },
-  -- Leaving the appropriate list empty effectively disables "smart" mode,
-  -- and forces auto-jump to be on or off.
---  safe_labels = { . . . },
---  labels = { . . . },
-  -- These keys are captured directly by the plugin at runtime.
-  special_keys = {
-    next_match_group = '<space>',
-    prev_match_group = '<tab>',
-  },
-  --- f/t ---
-  limit_ft_matches = 4,
-  repeat_ft_with_target_char = false,
-}
-
-
-
--- NOTE: This is just illustration - there is no need to copy/paste the
--- defaults, or call `setup` at all, if you do not want to change anything.
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -379,17 +501,15 @@ local servers = {
   -- rust_analyzer = {},
   -- tsserver = {},
 
---  sumneko_lua = {
---    Lua = {
---      workspace = { checkThirdParty = false },
---      telemetry = { enable = false },
---    },
---  },
+  -- sumneko_lua = {
+    -- Lua = {
+      -- workspace = { checkThirdParty = false },
+      -- telemetry = { enable = false },
+    -- },
+  -- },
 }
 
 -- Setup neovim lua configuration
-require('neodev').setup()
---
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
