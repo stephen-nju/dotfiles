@@ -61,11 +61,14 @@ require('packer').startup(function(use)
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
+  
+
   use 'mfussenegger/nvim-dap' --debug adapter protocol
-  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } } --dap ui
-  use "folke/neodev.nvim" ----neodev
+  use { 'rcarriga/nvim-dap-ui', requires = { 'mfussenegger/nvim-dap' } } --dap ui
+  use 'folke/neodev.nvim' ----neodev
 
-
+   use 'mfussenegger/nvim-dap-python' --python debug
+   
   -- Fuzzy Finder (files, lsp, etc)
   use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
 
@@ -77,7 +80,6 @@ require('packer').startup(function(use)
     requires = {
       'nvim-tree/nvim-web-devicons', -- optional, for file icons
     },
-    tag = 'nightly' -- optional, updated every week. (see issue #1193)
   }
   -- examples for your init.lua
 
@@ -124,39 +126,74 @@ end)
 --adapter
 
 local dap_ok, dap = pcall(require, "dap")
-dap.adapters.lldb = {
+-----配置window  cpptools的debug
+dap.adapters.cppdbg = {
+  id = 'cppdbg',
   type = 'executable',
-  command = '/usr/local/opt/llvm/bin/lldb-vscode', -- adjust as needed, must be absolute path
-  name = 'lldb'
+  command = 'D:\\cpptools-win64\\extension\\debugAdapters\\bin\\OpenDebugAD7.exe',
+    options = {
+    detached = false
+  }
 }
 
---config
+
+---其他平台cpptools的配置
+--dap.adapters.cppdbg = {
+--  id = 'cppdbg',
+--  type = 'executable',
+--  command = 'C:\\absolute\\path\\to\\cpptools\\extension\\debugAdapters\\bin\\OpenDebugAD7.exe',
+--  options = {
+--    detached = false
+--  }
+--}
+-- cpptools的配置
+
+
+--dap.adapters.lldb = {
+--  type = 'executable',
+--  command = 'D:/msys64/ucrt64/bin/lldb-vscode', -- adjust as needed, must be absolute path
+--  name = 'lldb'
+--}
+
 dap.configurations.cpp = {
   {
-    name = 'Launch',
-    type = 'lldb',
-    request = 'launch',
+    name = "Launch file",
+    type = "cppdbg",
+    request = "launch",
     program = function()
       return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
     end,
     cwd = '${workspaceFolder}',
-    stopOnEntry = false,
-    args = {},
-
-    -- 💀
-    -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
-    --
-    --    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-    --
-    -- Otherwise you might get the following error:
-    --
-    --    Error on launch: Failed to attach to the target process
-    --
-    -- But you should be aware of the implications:
-    -- https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html
-    -- runInTerminal = false,
+    stopAtEntry = true,
   },
 }
+--config lldb的配置
+--dap.configurations.cpp = {
+--  {
+--    name = 'Launch',
+--    type = 'lldb',
+--    request = 'launch',
+--    program = function()
+--      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+--    end,
+--    cwd = '${workspaceFolder}',
+--    stopOnEntry = false,
+--    args = {},
+--
+--    -- 💀
+--    -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
+--    --
+--    --    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+--    --
+--    -- Otherwise you might get the following error:
+--    --
+--    --    Error on launch: Failed to attach to the target process
+--    --
+--    -- But you should be aware of the implications:
+--    -- https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html
+--    runInTerminal = false,
+--  },
+--}
 
 -- If you want to use this for Rust and C, add something like this:
 
@@ -179,7 +216,7 @@ end
 ui.setup({})
 -------dapui keymapping
   
-vim.fn.sign_define('DapBreakpoint', { text = '🐞' })
+vim.fn.sign_define('DapBreakpoint', { text = '->' })
 
 ----- debug mappings-----
 vim.keymap.set('n', '<F5>', function() require('dap').continue() end)
@@ -194,6 +231,8 @@ vim.keymap.set('n', '<localleader>lp',
   function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
 vim.keymap.set('n', '<localleader>dr', function() require('dap').repl.open() end)
 vim.keymap.set('n', '<localleader>dl', function() require('dap').run_last() end)
+
+
 vim.keymap.set({ 'n', 'v' }, '<localleader>dh', function()
   require('dap.ui.widgets').hover()
 end)
@@ -218,7 +257,6 @@ vim.keymap.set("n", "<localleader>de", function()
   require("notify")("Debugger session ended", "warn")
 end)
 
-
 dap.listeners.after.event_initialized["dapui_config"] = function()
     ui.open({})
 end
@@ -227,13 +265,12 @@ dap.listeners.before.event_terminated["dapui_config"] = function()
     ui.close({})
 end
 
-
 dap.listeners.before.event_exited["dapui_config"] = function()
     ui.close({})
 end
 
-
-
+--python debug
+require('dap-python').setup('D:/ProgramData/Anaconda3/python')
 
 
 -- When we are bootstrapping a configuration, it doesn't
@@ -494,10 +531,11 @@ end
 --
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
+-- lsp 可以使用mason安装，也可以自己安装，自己安装的需要自定义启动
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  -- pyright = {},
+  pyright = {}  
   -- rust_analyzer = {},
   -- tsserver = {},
 
@@ -520,10 +558,14 @@ require('mason').setup()
 -- Ensure the servers above are installed
 local mason_lspconfig = require 'mason-lspconfig'
 
+--配置的servers在这个地方启动
 mason_lspconfig.setup {
+-- A list of servers to automatically install if they're not already installed 通过lspconfig
   ensure_installed = vim.tbl_keys(servers),
 }
 
+-- setup_handers :Registers the provided {handlers}, to be called by mason when an installed server supported by lspconfig is ready to be set up.
+-- 统一mason调用已安装的服务，类似get installed server
 mason_lspconfig.setup_handlers {
   function(server_name)
     require('lspconfig')[server_name].setup {
