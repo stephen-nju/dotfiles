@@ -18,6 +18,11 @@ end
 require('packer').startup(function(use)
   -- Package manager
   use 'wbthomason/packer.nvim'
+  use {
+    'williamboman/mason.nvim',
+    run = ':MasonUpdate' -- :MasonUpdate updates registry contents
+}
+
 
   use { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
@@ -61,13 +66,16 @@ require('packer').startup(function(use)
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
+  -------leap for motion
+  use 'ggandor/leap.nvim'
+  
   
 
   use 'mfussenegger/nvim-dap' --debug adapter protocol
   use { 'rcarriga/nvim-dap-ui', requires = { 'mfussenegger/nvim-dap' } } --dap ui
   use 'folke/neodev.nvim' ----neodev
 
-   use 'mfussenegger/nvim-dap-python' --python debug
+  use 'mfussenegger/nvim-dap-python' --python debug
    
   -- Fuzzy Finder (files, lsp, etc)
   use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
@@ -75,6 +83,8 @@ require('packer').startup(function(use)
   -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
   use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1 }
 
+  use 'nvim-tree/nvim-web-devicons'
+  
   use {
     'nvim-tree/nvim-tree.lua',
     requires = {
@@ -82,7 +92,11 @@ require('packer').startup(function(use)
     },
   }
   -- examples for your init.lua
-
+  --- 括号自动补全
+  use {
+  'windwp/nvim-autopairs',
+    config = function() require('nvim-autopairs').setup {} end}
+  
   -- disable netrw at the very start of your init.lua (strongly advised)
   vim.g.loaded_netrw = 1
   vim.g.loaded_netrwPlugin = 1
@@ -91,7 +105,7 @@ require('packer').startup(function(use)
   vim.opt.termguicolors = true
 
   -- empty setup using defaults
-  require("nvim-tree").setup()
+--  require("nvim-tree").setup()
 
   -- OR setup with some options
   require("nvim-tree").setup({
@@ -269,7 +283,7 @@ dap.listeners.before.event_exited["dapui_config"] = function()
     ui.close({})
 end
 
---python debug
+--python debug ----需要自定义环境
 require('dap-python').setup('D:/ProgramData/Anaconda3/python')
 
 
@@ -357,6 +371,9 @@ require('lualine').setup {
   },
 }
 
+--set leap.nvim setting
+require('leap').add_default_mappings()
+
 -- Enable Comment.nvim
 require('Comment').setup()
 
@@ -391,6 +408,7 @@ require('telescope').setup {
     },
   },
 }
+
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
@@ -531,11 +549,11 @@ end
 --
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
--- lsp 可以使用mason安装，也可以自己安装，自己安装的需要自定义启动
+-- Mason自动安装的服务
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  pyright = {}  
+  --pyright = {}  
   -- rust_analyzer = {},
   -- tsserver = {},
 
