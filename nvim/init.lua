@@ -97,6 +97,9 @@ require('packer').startup(function(use)
   'windwp/nvim-autopairs',
     config = function() require('nvim-autopairs').setup {} end}
   
+  
+  use {"akinsho/toggleterm.nvim", tag = '*'}
+  
   -- disable netrw at the very start of your init.lua (strongly advised)
   vim.g.loaded_netrw = 1
   vim.g.loaded_netrwPlugin = 1
@@ -628,10 +631,11 @@ cmp.setup {
 
   -- OR setup with some options
 require("nvim-tree").setup({})
+---可以使用不同的方式
 
-vim.keymap.set('n', '<C-e>', '<cmd>NvimTreeToggle<CR>',{ desc = 'Window [E]xplore' })
+vim.keymap.set('n', '<C-e>', function() require("nvim-tree.api").tree.toggle() end, { desc = 'Window [E]xplore' })
 --vim.keymap.set('n', '<C-ee>', '<cmd>NvimTreeClose<CR>',{ desc = 'Window [E]xplore' })
-vim.keymap.set('n', '<C-f>', '<cmd>NvimTreeFocus<CR>',{ desc = 'Window [E]xplore' })
+vim.keymap.set('n', '<C-f>', '<cmd>NvimTreeFocus<CR>', { desc = 'Window [E]xplore' })
 
 -- Close Vim if NvimTree is the last buffer
 vim.api.nvim_create_autocmd("QuitPre", {
@@ -647,6 +651,46 @@ vim.api.nvim_create_autocmd("QuitPre", {
     end
 })
 
+-- Change current working directory to that of the current buffer
+
+local change_cwd_to_curr_file = vim.api.nvim_create_augroup(
+    "au_all_files",
+    { clear = true }
+)
+vim.api.nvim_create_autocmd({ "BufEnter" }, {
+    group = change_cwd_to_curr_file,
+    pattern = "*",
+    command = "lcd %:p:h",
+})
+------toggleterm配置
+local status_ok, toggleterm = pcall(require, "toggleterm")
+if not status_ok then
+	return
+end
+
+toggleterm.setup({
+	size = 20,
+	open_mapping = [[<c-\>]],
+	hide_numbers = true,
+	shade_filetypes = {},
+	shade_terminals = true,
+	shading_factor = 2,
+	start_in_insert = true,
+	insert_mappings = true,
+	persist_size = true,
+	direction = "horizontal",
+	close_on_exit = true,
+	shell = [["D:\Program Files\Git\git-bash.exe"]],
+	-- shell = vim.o.shell,
+	float_opts = {
+		border = "curved",
+		winblend = 0,
+		highlights = {
+			border = "Normal",
+			background = "Normal",
+		},
+	},
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
