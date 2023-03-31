@@ -104,27 +104,7 @@ require('packer').startup(function(use)
   -- set termguicolors to enable highlight groups
   vim.opt.termguicolors = true
 
-  -- empty setup using defaults
---  require("nvim-tree").setup()
 
-  -- OR setup with some options
-  require("nvim-tree").setup({
-    sort_by = "case_sensitive",
-    view = {
-      width = 30,
-      mappings = {
-        list = {
-          { key = "u", action = "dir_up" },
-        },
-      },
-    },
-    renderer = {
-      group_empty = true,
-    },
-    filters = {
-      dotfiles = true,
-    },
-  })
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
   if has_plugins then
@@ -429,6 +409,7 @@ vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>wk', require('telescope.builtin').keymaps,{ desc = '[W]hich [K]ey' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -639,6 +620,33 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+
+--配置nvim-tree 的快捷键
+-- empty setup using defaults
+--  require("nvim-tree").setup()
+
+  -- OR setup with some options
+require("nvim-tree").setup({})
+
+vim.keymap.set('n', '<C-e>', '<cmd>NvimTreeToggle<CR>',{ desc = 'Window [E]xplore' })
+--vim.keymap.set('n', '<C-ee>', '<cmd>NvimTreeClose<CR>',{ desc = 'Window [E]xplore' })
+vim.keymap.set('n', '<C-f>', '<cmd>NvimTreeFocus<CR>',{ desc = 'Window [E]xplore' })
+
+-- Close Vim if NvimTree is the last buffer
+vim.api.nvim_create_autocmd("QuitPre", {
+    callback = function()
+        if (string.find(vim.api.nvim_buf_get_name(0), ".git//")) then
+            return
+        end
+        if (vim.fn.winnr("$") > 2 or (vim.fn.winnr("$") == 1 and string.find(vim.api.nvim_buf_get_name(0), "NvimTree_"))) then
+            return
+        else
+            vim.cmd("NvimTreeClose")
+        end
+    end
+})
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
