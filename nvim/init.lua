@@ -668,6 +668,8 @@ if not status_ok then
 	return
 end
 
+--vim.o.shellcmdflag="-c"
+
 toggleterm.setup({
 	size = 20,
 	open_mapping = [[<c-\>]],
@@ -680,7 +682,8 @@ toggleterm.setup({
 	persist_size = true,
 	direction = "horizontal",
 	close_on_exit = true,
-	shell = [["D:\Program Files\Git\git-bash.exe"]],
+	------window git bash should use this
+	shell='cmd.exe',
 	-- shell = vim.o.shell,
 	float_opts = {
 		border = "curved",
