@@ -1,3 +1,11 @@
+--[[
+Author: zhubin
+Date: 2023-04-03 09:18:28
+FilePath: \nvim\lua\user\lualine.lua
+Description: 
+
+Copyright (c) 2023 by ${git_name}, All Rights Reserved. 
+--]]
 local status_ok, lualine = pcall(require, "lualine")
 if not status_ok then
 	return
@@ -11,7 +19,7 @@ local diagnostics = {
 	"diagnostics",
 	sources = { "nvim_diagnostic" },
 	sections = { "error", "warn" },
-	symbols = { error = " ", warn = " " },
+	symbols = { error = "Error:", warn = "Warn:" },
 	colored = false,
 	update_in_insert = false,
 	always_visible = true,
@@ -20,7 +28,7 @@ local diagnostics = {
 local diff = {
 	"diff",
 	colored = false,
-	symbols = { added = " ", modified = " ", removed = " " }, -- changes diff symbols
+	symbols = { added = "+", modified = "~", removed = "-" }, -- changes diff symbols
   cond = hide_in_width
 }
 
@@ -39,8 +47,8 @@ local filetype = {
 
 local branch = {
 	"branch",
-	icons_enabled = true,
-	icon = "",
+	icons_enabled = false,
+	icon = nil,
 }
 
 local location = {
@@ -64,9 +72,9 @@ end
 
 lualine.setup({
 	options = {
-		icons_enabled = true,
+		icons_enabled = false,
 		theme = "auto",
-		component_separators = { left = "", right = "" },
+		component_separators = { left = "|", right = "|" },
 		section_separators = { left = "", right = "" },
 		disabled_filetypes = { "alpha", "dashboard", "NvimTree", "Outline" },
 		always_divide_middle = true,
