@@ -58,7 +58,6 @@ mason_lspconfig.setup_handlers {
 }
 
 
-
 --local opts = {}
 
 --for _, server in pairs(servers) do

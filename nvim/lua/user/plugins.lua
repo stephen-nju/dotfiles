@@ -105,6 +105,14 @@ return packer.startup(function(use)
 
 	-- Git
 	use { "lewis6991/gitsigns.nvim"}
+    use("ggandor/lightspeed.nvim")
+
+	use 'mfussenegger/nvim-dap' --debug adapter protocol
+	use { 'rcarriga/nvim-dap-ui', requires = { 'mfussenegger/nvim-dap' } } --dap ui
+
+   use 'mfussenegger/nvim-dap-python' --python debug
+
+
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins

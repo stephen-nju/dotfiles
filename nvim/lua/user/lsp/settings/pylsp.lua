@@ -14,10 +14,12 @@ return {
               pycodestyle = {
                 ignore = {'W391'},
                 maxLineLength = 120
-              }
+              },
+			  rope_autoimport={
+			  enabled=true
+			  }
             }
           }
 
     },
   }
-  

@@ -10,21 +10,19 @@ M.capabilities.textDocument.completion.completionItem.snippetSupport = true
 M.capabilities = cmp_nvim_lsp.default_capabilities(M.capabilities)
 
 M.setup = function()
-	
-  local signs = {
+	local signs = {
+        { name = "DiagnosticSignError", text = "" },
+        { name = "DiagnosticSignWarn", text = "" },
+        { name = "DiagnosticSignHint", text = "" },
+        { name = "DiagnosticSignInfo", text = "" },
+    }
 
-
-		{ name = "DiagnosticSignError", text = "" },
-		{ name = "DiagnosticSignWarn", text = "" },
-		{ name = "DiagnosticSignHint", text = "" },
-		{ name = "DiagnosticSignInfo", text = "" },
-	}
 	for _, sign in ipairs(signs) do
 		vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
 	end
 
 	local config = {
-		virtual_text = true, -- disable virtual text
+		virtual_text = fasle, -- disable virtual text
 		signs = {
 			active = signs, -- show signs
 		},
@@ -52,6 +50,9 @@ M.setup = function()
 	})
 end
 
+
+
+
 local function lsp_keymaps(bufnr)
 	local opts = { noremap = true, silent = true }
 	local keymap = vim.api.nvim_buf_set_keymap
@@ -68,7 +69,48 @@ local function lsp_keymaps(bufnr)
 	keymap(bufnr, "n", "<leader>rn", "<cmd>lua vim.lsp.buf.rename()<cr>", opts)
 	keymap(bufnr, "n", "<leader>ls", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
 	keymap(bufnr, "n", "<leader>lq", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
+	
 end
+
+local function diagnose_keymap(_, bufnr)
+    vim.keymap.set({ "n" }, "]d", vim.diagnostic.goto_next, { buffer = bufnr })
+    vim.keymap.set({ "n" }, "[d", vim.diagnostic.goto_prev, { buffer = bufnr })
+    if OK_TELESCOPE then
+        vim.keymap.set(
+            { "n" },
+            "<leader>df",
+            "<Cmd>Telescope diagnostics<Cr>",
+            { buffer = bufnr }
+        )
+        vim.keymap.set({ "n" }, "<leader>lds", function()
+            TELESCOPE_BUILTIN.lsp_document_symbols()
+        end, { buffer = bufnr })
+        vim.keymap.set({ "n" }, "<leader>ldw", function()
+            TELESCOPE_BUILTIN.lsp_dynamic_workspace_symbols()
+        end, { buffer = bufnr })
+    end
+end
+
+local function set_autocmds(client, _) -- (client, bufnr)
+    -- Set autocommands conditional on server_capabilities
+    if client.server_capabilities.document_highlight then
+        local group = vim.api.nvim_create_augroup(
+            "lsp_document_highlight",
+            { clear = true }
+        )
+        vim.api.nvim_create_autocmd({ "CursorHold" }, {
+            group = group,
+            buffer = 0,
+            callback = vim.lsp.buf.document_highlight,
+        })
+        vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+            group = group,
+            buffer = 0,
+            callback = vim.lsp.buf.clear_references,
+        })
+    end
+end
+
 
 M.on_attach = function(client, bufnr)
 	if client.name == "tsserver" then
@@ -78,8 +120,13 @@ M.on_attach = function(client, bufnr)
 	if client.name == "sumneko_lua" then
 		client.server_capabilities.documentFormattingProvider = false
 	end
-
+	--设置不同的map
 	lsp_keymaps(bufnr)
+
+	set_autocmds(client,bufnr)
+	
+	diagnose_keymap(client,bufnr)
+	
 	local status_ok, illuminate = pcall(require, "illuminate")
 	if not status_ok then
 		return
@@ -90,5 +137,7 @@ M.on_attach = function(client, bufnr)
 		vim.lsp.buf.format()
 	  end, { desc = 'Format current buffer with LSP' })
 end
+
+
 
 return M
