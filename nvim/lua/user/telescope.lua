@@ -23,6 +23,7 @@ vim.keymap.set('n', '<leader>/', function()
   })
 end, { desc = '[/] Fuzzily search in current buffer]' })
 
+<<<<<<< HEAD
 vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = 'find files' })
 vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = 'find help' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').grep_string, { desc = 'find string' })
