@@ -52,7 +52,6 @@ end
 
 
 
-
 local function lsp_keymaps(bufnr)
 	local opts = { noremap = true, silent = true }
 	local keymap = vim.api.nvim_buf_set_keymap
@@ -133,9 +132,9 @@ M.on_attach = function(client, bufnr)
 	end
 	illuminate.on_attach(client)
 	  -- Create a command `:Format` local to the LSP buffer
-	vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
-		vim.lsp.buf.format()
-	  end, { desc = 'Format current buffer with LSP' })
+--	vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
+--		vim.lsp.buf.format()
+--	  end, { desc = 'Format current buffer with LSP' })
 end
 
 

@@ -1,41 +1,13 @@
-vim.cmd [[
-  augroup _general_settings
-    autocmd!
-    autocmd FileType qf,help,man,lspinfo nnoremap <silent> <buffer> q :close<CR> 
-    autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200}) 
-    autocmd BufWinEnter * :set formatoptions-=cro
-    autocmd FileType qf set nobuflisted
-  augroup end
+-- Set syntax/indents for non-standard file types
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.pyi', command = 'set syntax=python'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.sk', command = 'set syntax=skull filetype=skull'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.test', command = 'set syntax=mypyc_test_cases filetype=mypyc_test_cases'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.c', command = 'set syntax=c filetype=c'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.h', command = 'set syntax=c filetype=c'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.ll', command = 'set syntax=llvm filetype=llvm'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = 'Dockerfile.*', command = 'set syntax=dockerfile filetype=dockerfile'})
+vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {pattern = '*.py', command = 'set commentstring=#\\ %s'})
 
-  augroup _git
-    autocmd!
-    autocmd FileType gitcommit setlocal wrap
-    autocmd FileType gitcommit setlocal spell
-  augroup end
-
-  augroup _markdown
-    autocmd!
-    autocmd FileType markdown setlocal wrap
-    autocmd FileType markdown setlocal spell
-  augroup end
-
-  augroup _auto_resize
-    autocmd!
-    autocmd VimResized * tabdo wincmd = 
-  augroup end
-
-  augroup _alpha
-    autocmd!
-    autocmd User AlphaReady set showtabline=0 | autocmd BufUnload <buffer> set showtabline=2
-  augroup end
-]]
-
--- Autoformat
--- augroup _lsp
---   autocmd!
---   autocmd BufWritePre * lua vim.lsp.buf.formatting()
--- augroup end
--- Change current working directory to that of the current buffer
 
 local change_cwd_to_curr_file = vim.api.nvim_create_augroup(
     "au_all_files",
@@ -46,3 +18,18 @@ vim.api.nvim_create_autocmd({ "BufEnter" }, {
     pattern = "*",
     command = "lcd %:p:h",
 })
+
+vim.api.nvim_create_autocmd('TextYankPost', {
+  group = vim.api.nvim_create_augroup('YankHighlight', { clear = true }),
+  pattern = '*',
+  callback = function()
+    vim.highlight.on_yank()
+  end,
+})
+
+-- Save when exiting insert mode
+vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+        pattern = { "*" },
+        command = "silent! wall",
+        nested = true,
+    })

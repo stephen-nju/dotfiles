@@ -44,7 +44,7 @@ return packer.startup(function(use)
   use { "nvim-lua/plenary.nvim" } -- Useful lua functions used by lots of plugins
   use { "windwp/nvim-autopairs" } -- Autopairs, integrates with both cmp and treesitter
   use { "numToStr/Comment.nvim"}
-  use { "JoosepAlviste/nvim-ts-context-commentstring" }
+--use { "JoosepAlviste/nvim-ts-context-commentstring" }
   use { "kyazdani42/nvim-web-devicons"  }
   use { "kyazdani42/nvim-tree.lua"  }
   use { "akinsho/bufferline.nvim"  }
@@ -55,7 +55,7 @@ return packer.startup(function(use)
   use { "lewis6991/impatient.nvim"  }
   use { "lukas-reineke/indent-blankline.nvim" }
   use { "goolord/alpha-nvim"  }
-	use {"folke/which-key.nvim"}
+--use {"folke/which-key.nvim"}
 
 	-- Colorschemes
   use { "folke/tokyonight.nvim" }
@@ -72,8 +72,9 @@ return packer.startup(function(use)
 	-- Snippets
   use { "L3MON4D3/LuaSnip" } --snippet engine
   use { "rafamadriz/friendly-snippets"  } -- a bunch of snippets to use
-  use { "williamboman/mason.nvim"}
 	-- LSP
+
+  use { "williamboman/mason.nvim"}
 	use { 'neovim/nvim-lspconfig',
     requires = {
       -- Automatically install LSPs to stdpath for neovim
@@ -86,9 +87,10 @@ return packer.startup(function(use)
     }, } -- enable LSP
 	
  -- simple to use language server installer
-	use { "jose-elias-alvarez/null-ls.nvim"} -- for formatters and linters
   use { "RRethy/vim-illuminate"}
+	--Formatter
 
+  use { 'mhartington/formatter.nvim' }
 	-- Telescope
 	use { "nvim-telescope/telescope.nvim" }
 
@@ -105,14 +107,17 @@ return packer.startup(function(use)
 
 	-- Git
 	use { "lewis6991/gitsigns.nvim"}
-    use("ggandor/lightspeed.nvim")
+    use("ggandor/leap.nvim")
 
 	use 'mfussenegger/nvim-dap' --debug adapter protocol
 	use { 'rcarriga/nvim-dap-ui', requires = { 'mfussenegger/nvim-dap' } } --dap ui
 
    use 'mfussenegger/nvim-dap-python' --python debug
 
-
+   use {
+  "folke/trouble.nvim",
+  requires = "nvim-tree/nvim-web-devicons",
+}
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins

@@ -48,11 +48,17 @@ end
 -- 统一mason调用已安装的服务，类似get installed server
 mason_lspconfig.setup_handlers {
   function(server_name)
+	local opts={}
     local require_ok, conf_opts = pcall(require, "user.lsp.settings." .. server_name)
+	if require_ok then
+---- 如果无法找到sever setting 默认为空
+		print(server_name)
+		opts=vim.tbl_deep_extend("force",conf_opts,opts)
+	end
     require('lspconfig')[server_name].setup {
       capabilities = require("user.lsp.handlers").capabilities,
       on_attach = require("user.lsp.handlers").on_attach,
-      settings = conf_opts,
+      settings = opts,
     }
   end,
 }
