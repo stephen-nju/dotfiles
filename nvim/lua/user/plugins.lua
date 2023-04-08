@@ -86,6 +86,7 @@ return packer.startup(function(use)
       'folke/neodev.nvim',
     }, } -- enable LSP
 	
+  use {"onsails/lspkind.nvim"}
  -- simple to use language server installer
   use { "RRethy/vim-illuminate"}
 	--Formatter
@@ -119,6 +120,9 @@ return packer.startup(function(use)
   requires = "nvim-tree/nvim-web-devicons",
 }
 
+  use {"rcarriga/nvim-notify"}
+
+  use { 'rainbowhxch/accelerated-jk.nvim' }
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
 	if PACKER_BOOTSTRAP then
