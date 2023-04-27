@@ -9,7 +9,7 @@ Copyright (c) 2023 by ${git_name}, All Rights Reserved.
 local get_os_name = require("utils.get_os_name")
 
 if get_os_name.get_os_name() == "Windows" then
-   return { "C:\\ProgramData\\scoop\\apps\\git\\current\\bin\\bash.exe" }
+   return { "pwsh" }
 else
    return { "fish" }
 end

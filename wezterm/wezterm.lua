@@ -1,3 +1,11 @@
+--[[
+Author: zhubin
+Date: 2023-04-12 09:10:15
+FilePath: \wezterm\wezterm.lua
+Description: 
+
+Copyright (c) 2023 by ${git_name}, All Rights Reserved. 
+--]]
 local wezterm = require("wezterm")
 local keybindings = require("config.key-bindings")
 local launch_menu = require("config.launch-menu")
@@ -15,8 +23,9 @@ require("config.tab-title").setup()
 
 return {
    -- fonts
-   font = wezterm.font({family="Consolas",weight='Regular'}),
+   font = wezterm.font_with_fallback({"Consolas","MesloLGM NF","Hack Nerd Font Mono"}),
    font_size = 12,
+   front_end = "OpenGL",
 
    -- colour scheme
    color_scheme = "Catppuccin Frappe",
@@ -24,6 +33,7 @@ return {
 
    -- scroll bar
    enable_scroll_bar = true,
+   tab_bar_at_bottom = true,
 
    -- status
    status_update_interval = 1000,
@@ -51,6 +61,8 @@ return {
    automatically_reload_config = true,
    inactive_pane_hsb = { saturation = 1.0, brightness = 1.0 },
    -- window_background_opacity = 0.9,
+   
+   window_close_confirmation = "NeverPrompt",
 
    -- keybindings
    disable_default_key_bindings = true,
@@ -64,6 +76,14 @@ return {
          mods = "CTRL",
          action = wezterm.action.OpenLinkAtMouseCursor,
       },
+	  	{
+
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "NONE",
+			action = wezterm.action({
+				CompleteSelectionOrOpenLinkAtMouseCursor = "Clipboard",
+			}),
+		},
    },
 
 

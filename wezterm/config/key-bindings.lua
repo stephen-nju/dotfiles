@@ -9,13 +9,7 @@ Copyright (c) 2023 by ${git_name}, All Rights Reserved.
 local wezterm = require("wezterm")
 
 return {
-   {
-      key = [[\]],
-      mods = "CTRL|ALT",
-      action = wezterm.action({
-         SplitHorizontal = { domain = "CurrentPaneDomain" },
-      }),
-   },
+
    {
       key = [[\]],
       mods = "CTRL",
@@ -68,21 +62,9 @@ return {
       mods = "CTRL|SHIFT|ALT",
       action = wezterm.action({ AdjustPaneSize = { "Down", 1 } }),
    },
-   { -- browser-like bindings for tabbing
-      key = "t",
-      mods = "CTRL",
-      action = wezterm.action({ SpawnTab = "DefaultDomain" }),
-   },
-   {
-      key = "t",
-      mods = "CTRL|SHIFT",
-      action = wezterm.action.SpawnTab({
-         DomainName = "WSL:Ubuntu",
-      }),
-   },
    {
       key = "w",
-      mods = "CTRL",
+      mods = "CTRL|ALT",
       action = wezterm.action({ CloseCurrentTab = { confirm = false } }),
    },
    {
@@ -126,6 +108,4 @@ return {
          })
       end),
    },
-   { key = "t", mods = "ALT", action = wezterm.action.ShowTabNavigator },
-   { key = "l", mods = "ALT", action = wezterm.action.ShowLauncher },
 }
